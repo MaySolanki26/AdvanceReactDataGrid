@@ -1,0 +1,60 @@
+I want you to generate a highly optimized and dynamic React + TypeScript table component without using any third-party libraries (not even Tailwind, MUI, or virtual libraries).
+
+This table should behave like Excel and should include the following features:
+
+🔧 General Features:
+- 100% custom code without any third-party libraries.
+- Column and row virtualization for performance (render only visible rows/columns).
+- Fully responsive and adaptive to screen height and width.
+- Sticky header and scrollable body.
+- Custom column width and height, with support for auto-resize if not provided.
+- Sorting (asc/desc toggle) on every column.
+- Resizable columns.
+- Draggable (reorder) columns.
+- Sticky/fixed columns, user-defined dynamically.
+- Hide/show columns dynamically (toggle column visibility).
+- Copy and paste cell data like Excel.
+- Grouping rows by a column, and expandable groups.
+- Expandable child rows (child table).
+- In-cell custom rendering (custom components like button, dropdown, etc.).
+- Checkbox support with row selection.
+- Filterable headers with Excel-like filters (text, number, etc.).
+- Client-side pagination that activates only if `pagination` prop is true.
+- Export table data to CSV or JSON.
+- Minimal re-rendering and smooth performance for large data sets.
+
+🧩 API / Props Design:
+- `columns`: JSON array describing columns with:
+  - `key`: unique key for each column.
+  - `title`: column header.
+  - `sortable`: boolean.
+  - `resizable`: boolean.
+  - `fixed`: 'left' | 'right' | undefined.
+  - `width`: optional fixed width.
+  - `render`: optional (rowData) => JSX.Element — for custom cell components.
+  - `filterable`: boolean.
+  - `groupBy`: boolean — for grouping.
+  - `hidden`: boolean — for default hidden columns.
+- `data`: array of objects (row data).
+- `pagination`: boolean — if true, enables pagination.
+- `height` and `width`: optional — if not passed, table should use remaining screen space.
+- `rowKey`: string — unique key to identify rows.
+- `selectable`: boolean — to enable checkbox selection.
+
+📁 Folder Structure:
+Split the component into well-structured reusable files like:
+- `Table.tsx`
+- `TableHeader.tsx`
+- `TableRow.tsx`
+- `CellRenderer.tsx`
+- `useVirtual.ts` — for virtualization logic.
+- `useResize.ts` — for resizable columns.
+- `useColumnOrder.ts` — for column drag-drop handling.
+- `useExport.ts` — for CSV/JSON export.
+
+I want the AI to generate:
+- A working Table.tsx component with above functionalities.
+- Proper prop typing with TypeScript.
+- Efficient DOM updates and performance optimization.
+
+Please keep the code modular, maintainable, and easy to extend. Write a production-quality codebase that is ready to publish as an npm package.
