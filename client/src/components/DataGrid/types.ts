@@ -4,8 +4,8 @@ export interface ColumnDef<T = any> {
   width?: number;
   minWidth?: number;
   maxWidth?: number;
-  sortable?: boolean;
-  resizable?: boolean;
+  sortable?: boolean; // defaults to true
+  resizable?: boolean; // defaults to true
   filterable?: boolean;
   editable?: boolean;
   fixed?: 'left' | 'right';

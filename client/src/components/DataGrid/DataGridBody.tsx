@@ -17,6 +17,12 @@ interface DataGridBodyProps<T> {
   onRowSelect: (row: T, event?: React.MouseEvent) => void;
   getColumnWidth: (column: ColumnDef<T>) => number;
   getRowKey: (row: T) => string;
+  editingCell: { rowIndex: number; columnKey: string } | null;
+  editingValue: any;
+  onStartEdit: (rowIndex: number, columnKey: string, value: any) => void;
+  onValueChange: (value: any) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
 }
 
 export function DataGridBody<T>({
@@ -32,7 +38,13 @@ export function DataGridBody<T>({
   onRowDoubleClick,
   onRowSelect,
   getColumnWidth,
-  getRowKey
+  getRowKey,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onValueChange,
+  onSaveEdit,
+  onCancelEdit
 }: DataGridBodyProps<T>) {
   const rowHeight = options.rowHeight || 48;
   const virtualScrolling = options.virtualScrolling !== false;
@@ -89,6 +101,12 @@ export function DataGridBody<T>({
               onRowDoubleClick={onRowDoubleClick}
               onRowSelect={onRowSelect}
               getColumnWidth={getColumnWidth}
+              editingCell={editingCell}
+              editingValue={editingValue}
+              onStartEdit={onStartEdit}
+              onValueChange={onValueChange}
+              onSaveEdit={onSaveEdit}
+              onCancelEdit={onCancelEdit}
             />
           );
         })}

@@ -108,6 +108,12 @@
   overflow: hidden;
 }
 
+.data-grid-header-container {
+  position: relative;
+  z-index: 2;
+  overflow: hidden;
+}
+
 .data-grid-header {
   position: sticky;
   top: 0;
@@ -115,6 +121,7 @@
   background: var(--grid-header-bg);
   border-bottom: 1px solid var(--grid-border-color);
   display: flex;
+  min-width: 100%;
 }
 
 .data-grid-header-cell {

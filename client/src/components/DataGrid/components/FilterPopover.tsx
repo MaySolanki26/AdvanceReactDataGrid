@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { ColumnDef, FilterConfig } from '../types';
 
 interface FilterPopoverProps<T> {
@@ -18,180 +18,139 @@ export function FilterPopover<T>({
   currentFilter,
   data
 }: FilterPopoverProps<T>) {
-  const [filterValue, setFilterValue] = useState(currentFilter?.value || '');
   const [operator, setOperator] = useState<FilterConfig['operator']>(currentFilter?.operator || 'contains');
+  const [value, setValue] = useState<string>(currentFilter?.value || '');
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      setFilterValue(currentFilter?.value || '');
-      setOperator(currentFilter?.operator || 'contains');
-    }
-  }, [isOpen, currentFilter]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    };
 
-  if (!isOpen) return null;
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   const handleApply = () => {
-    onApplyFilter(filterValue, operator);
+    onApplyFilter(value, operator);
     onClose();
   };
 
   const handleClear = () => {
-    onApplyFilter(null, 'contains');
+    setValue('');
+    onApplyFilter('', operator);
     onClose();
   };
 
-  const getUniqueValues = () => {
-    const values = new Set();
-    data.forEach(row => {
-      const value = column.accessor ? column.accessor(row) : (row as any)[column.key];
-      if (value !== null && value !== undefined) {
-        values.add(value);
-      }
-    });
-    return Array.from(values).sort();
-  };
+  if (!isOpen) return null;
 
-  const renderFilterInput = () => {
-    switch (column.type) {
-      case 'number':
-        return (
-          <input
-            type="number"
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value ? Number(e.target.value) : '')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            placeholder="Enter number..."
-          />
-        );
-      
-      case 'date':
-        return (
-          <input
-            type="date"
-            value={filterValue ? new Date(filterValue).toISOString().split('T')[0] : ''}
-            onChange={(e) => setFilterValue(e.target.value ? new Date(e.target.value) : '')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          />
-        );
-      
-      case 'boolean':
-        return (
-          <select
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value === 'true' ? true : e.target.value === 'false' ? false : '')}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="">All</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        );
-      
-      case 'select':
-        const uniqueValues = getUniqueValues();
-        return (
-          <select
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          >
-            <option value="">All</option>
-            {uniqueValues.map((value: any) => (
-              <option key={value} value={value}>
-                {String(value)}
-              </option>
-            ))}
-          </select>
-        );
-      
-      default:
-        return (
-          <input
-            type="text"
-            value={filterValue}
-            onChange={(e) => setFilterValue(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-            placeholder="Enter text..."
-          />
-        );
-    }
-  };
-
-  const getOperatorOptions = () => {
-    switch (column.type) {
-      case 'number':
-        return [
-          { value: 'equals', label: 'Equals' },
-          { value: 'gt', label: 'Greater than' },
-          { value: 'lt', label: 'Less than' },
-          { value: 'between', label: 'Between' }
-        ];
-      case 'date':
-        return [
-          { value: 'equals', label: 'Equals' },
-          { value: 'gt', label: 'After' },
-          { value: 'lt', label: 'Before' }
-        ];
-      case 'boolean':
-      case 'select':
-        return [
-          { value: 'equals', label: 'Equals' }
-        ];
-      default:
-        return [
-          { value: 'contains', label: 'Contains' },
-          { value: 'equals', label: 'Equals' },
-          { value: 'startsWith', label: 'Starts with' },
-          { value: 'endsWith', label: 'Ends with' }
-        ];
-    }
-  };
+  // Get unique values for select columns
+  const uniqueValues = column.type === 'select' || column.type === 'boolean' ? 
+    [...new Set(data.map(row => {
+      const val = column.accessor ? column.accessor(row) : (row as any)[column.key];
+      return val;
+    }).filter(v => v !== null && v !== undefined))] : [];
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4">
-      <div className="space-y-4">
+    <div
+      ref={popoverRef}
+      className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50 min-w-[200px]"
+    >
+      <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Filter by {column.title}
-          </label>
-          {renderFilterInput()}
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Condition
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Filter by
           </label>
           <select
             value={operator}
             onChange={(e) => setOperator(e.target.value as FilterConfig['operator'])}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {getOperatorOptions().map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            <option value="contains">Contains</option>
+            <option value="equals">Equals</option>
+            <option value="startsWith">Starts with</option>
+            <option value="endsWith">Ends with</option>
+            {column.type === 'number' && (
+              <>
+                <option value="gt">Greater than</option>
+                <option value="lt">Less than</option>
+              </>
+            )}
           </select>
         </div>
-        
-        <div className="flex justify-end space-x-2 pt-2">
-          <button
-            onClick={handleClear}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-          >
-            Clear
-          </button>
-          <button
-            onClick={onClose}
-            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded"
-          >
-            Cancel
-          </button>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Value
+          </label>
+          {column.type === 'select' ? (
+            <select
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All</option>
+              {uniqueValues.map((val) => (
+                <option key={String(val)} value={String(val)}>
+                  {String(val)}
+                </option>
+              ))}
+            </select>
+          ) : column.type === 'boolean' ? (
+            <select
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All</option>
+              <option value="true">True</option>
+              <option value="false">False</option>
+            </select>
+          ) : column.type === 'date' ? (
+            <input
+              type="date"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          ) : column.type === 'number' ? (
+            <input
+              type="number"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter number..."
+            />
+          ) : (
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter value..."
+            />
+          )}
+        </div>
+
+        <div className="flex gap-2 pt-2">
           <button
             onClick={handleApply}
-            className="px-3 py-1 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded"
+            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             Apply
+          </button>
+          <button
+            onClick={handleClear}
+            className="flex-1 bg-gray-100 text-gray-700 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Clear
           </button>
         </div>
       </div>

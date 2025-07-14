@@ -164,6 +164,13 @@ export function DataGridHeader<T>({
                 }}
               />
             )}
+            
+            {column.resizable !== false && (
+              <div
+                className="data-grid-resize-handle"
+                onMouseDown={(e) => handleResizeMouseDown(column.key, e)}
+              />
+            )}
           </div>
         );
       })}

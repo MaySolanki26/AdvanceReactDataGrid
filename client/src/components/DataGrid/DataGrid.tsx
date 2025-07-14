@@ -244,31 +244,36 @@ export function DataGrid<T = any>({
       />
       
       <div className="data-grid-container" style={{ height: options.height || 600 }}>
-        <DataGridHeader
-          columns={orderedColumns}
-          columnWidths={columnWidths}
-          sortConfig={sortConfig}
-          filterConfig={filterConfig}
-          data={displayData}
-          onSort={handleSort}
-          onFilter={handleFilter}
-          onResizeStart={handleResizeStart}
-          onColumnDragStart={handleDragStart}
-          onColumnDragOver={handleDragOver}
-          onColumnDrop={handleDrop}
-          onColumnDragEnd={handleDragEnd}
-          draggedColumn={draggedColumn}
-          dragOverColumn={dragOverColumn}
-          selectable={options.selectable || false}
-          isAllSelected={selectionState.isAllSelected}
-          isIndeterminate={selectionState.isIndeterminate}
-          onSelectAll={toggleAllSelection}
-          getColumnWidth={getColumnWidth}
-        />
+        <div 
+          className="data-grid-header-container"
+          style={{ transform: `translateX(-${scrollLeft}px)` }}
+        >
+          <DataGridHeader
+            columns={orderedColumns}
+            columnWidths={columnWidths}
+            sortConfig={sortConfig}
+            filterConfig={filterConfig}
+            data={displayData}
+            onSort={handleSort}
+            onFilter={handleFilter}
+            onResizeStart={handleResizeStart}
+            onColumnDragStart={handleDragStart}
+            onColumnDragOver={handleDragOver}
+            onColumnDrop={handleDrop}
+            onColumnDragEnd={handleDragEnd}
+            draggedColumn={draggedColumn}
+            dragOverColumn={dragOverColumn}
+            selectable={options.selectable || false}
+            isAllSelected={selectionState.isAllSelected}
+            isIndeterminate={selectionState.isIndeterminate}
+            onSelectAll={toggleAllSelection}
+            getColumnWidth={getColumnWidth}
+          />
+        </div>
         
         <div
           className="data-grid-body"
-          style={{ height: containerHeight }}
+          style={{ height: containerHeight, overflowX: 'auto' }}
           onScroll={handleScroll}
           ref={bodyRef}
         >

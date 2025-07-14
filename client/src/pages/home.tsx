@@ -48,21 +48,34 @@ export default function Home() {
       title: 'Name',
       width: 200,
       sortable: true,
-      filterable: true
+      filterable: true,
+      editable: true,
+      type: 'text'
     },
     {
       key: 'email',
       title: 'Email',
       width: 250,
       sortable: true,
-      filterable: true
+      filterable: true,
+      editable: true,
+      type: 'email'
     },
     {
       key: 'department',
       title: 'Department',
       width: 150,
       sortable: true,
-      filterable: true
+      filterable: true,
+      editable: true,
+      type: 'select',
+      options: [
+        { value: 'Engineering', label: 'Engineering' },
+        { value: 'Marketing', label: 'Marketing' },
+        { value: 'Sales', label: 'Sales' },
+        { value: 'HR', label: 'HR' },
+        { value: 'Finance', label: 'Finance' }
+      ]
     },
     {
       key: 'status',
@@ -83,6 +96,7 @@ export default function Home() {
       type: 'number',
       sortable: true,
       filterable: true,
+      editable: true,
       render: (value: number) => `$${value.toLocaleString()}`
     },
     {
@@ -92,6 +106,7 @@ export default function Home() {
       type: 'date',
       sortable: true,
       filterable: true,
+      editable: true,
       render: (value: Date) => value.toLocaleDateString()
     },
     {
@@ -101,6 +116,7 @@ export default function Home() {
       type: 'boolean',
       sortable: true,
       filterable: true,
+      editable: true,
       render: (value: boolean) => (
         <span className={`data-grid-status-badge ${value ? 'success' : 'error'}`}>
           {value ? 'Yes' : 'No'}
