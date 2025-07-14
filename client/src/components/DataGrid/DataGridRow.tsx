@@ -1,6 +1,6 @@
 import React from 'react';
 import { ColumnDef } from './types';
-import { DataGridCell } from './DataGridCell';
+import { EditableCell } from './components/EditableCell';
 
 interface DataGridRowProps<T> {
   row: T;
@@ -14,6 +14,12 @@ interface DataGridRowProps<T> {
   onRowDoubleClick?: (row: T, index: number) => void;
   onRowSelect: (row: T, event?: React.MouseEvent) => void;
   getColumnWidth: (column: ColumnDef<T>) => number;
+  editingCell: { rowIndex: number; columnKey: string } | null;
+  editingValue: any;
+  onStartEdit: (rowIndex: number, columnKey: string, value: any) => void;
+  onValueChange: (value: any) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
 }
 
 export function DataGridRow<T>({
@@ -27,7 +33,13 @@ export function DataGridRow<T>({
   onRowClick,
   onRowDoubleClick,
   onRowSelect,
-  getColumnWidth
+  getColumnWidth,
+  editingCell,
+  editingValue,
+  onStartEdit,
+  onValueChange,
+  onSaveEdit,
+  onCancelEdit
 }: DataGridRowProps<T>) {
   const handleClick = (e: React.MouseEvent) => {
     if (selectable) {
@@ -64,15 +76,22 @@ export function DataGridRow<T>({
       {columns.map((column) => {
         const width = getColumnWidth(column);
         const value = column.accessor ? column.accessor(row) : (row as any)[column.key];
+        const isEditing = editingCell?.rowIndex === index && editingCell?.columnKey === column.key;
 
         return (
-          <DataGridCell
+          <EditableCell
             key={column.key}
             column={column}
             value={value}
             row={row}
             index={index}
             width={width}
+            isEditing={isEditing}
+            editingValue={editingValue}
+            onStartEdit={(value) => onStartEdit(index, column.key, value)}
+            onValueChange={onValueChange}
+            onSaveEdit={onSaveEdit}
+            onCancelEdit={onCancelEdit}
           />
         );
       })}

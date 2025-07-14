@@ -10,6 +10,7 @@ import { useSelection } from './hooks/useSelection';
 import { useSorting } from './hooks/useSorting';
 import { useFiltering } from './hooks/useFiltering';
 import { useExport } from './hooks/useExport';
+import { useEditing } from './hooks/useEditing';
 import { sortData, filterData, debounce } from './utils';
 import './DataGrid.css';
 
@@ -27,6 +28,8 @@ export function DataGrid<T = any>({
   onFilterChange,
   onColumnResize,
   onColumnReorder,
+  onCellEdit,
+  onDataChange,
   className = '',
   style = {}
 }: DataGridProps<T>) {
@@ -83,6 +86,19 @@ export function DataGrid<T = any>({
     clearAllFilters,
     getActiveFiltersCount
   } = useFiltering({ onFilterChange });
+
+  const { 
+    editingCell, 
+    editingValue, 
+    setEditingValue, 
+    startEditing, 
+    saveEdit, 
+    cancelEdit 
+  } = useEditing({ 
+    data, 
+    onCellEdit: onCellEdit || undefined, 
+    onDataChange: onDataChange || undefined 
+  });
 
   const { handleExportCSV, handleExportJSON, handleExportExcel, handlePrint } = useExport({
     data,
@@ -232,6 +248,8 @@ export function DataGrid<T = any>({
           columns={orderedColumns}
           columnWidths={columnWidths}
           sortConfig={sortConfig}
+          filterConfig={filterConfig}
+          data={displayData}
           onSort={handleSort}
           onFilter={handleFilter}
           onResizeStart={handleResizeStart}
@@ -268,6 +286,12 @@ export function DataGrid<T = any>({
             onRowSelect={toggleRowSelection}
             getColumnWidth={getColumnWidth}
             getRowKey={(row: T) => String((row as any)[rowKey])}
+            editingCell={editingCell}
+            editingValue={editingValue}
+            onStartEdit={startEditing}
+            onValueChange={setEditingValue}
+            onSaveEdit={saveEdit}
+            onCancelEdit={cancelEdit}
           />
         </div>
       </div>

@@ -1,12 +1,15 @@
-import React from 'react';
-import { ColumnDef, SortConfig } from './types';
+import React, { useState } from 'react';
+import { ColumnDef, SortConfig, FilterConfig } from './types';
+import { FilterPopover } from './components/FilterPopover';
 
 interface DataGridHeaderProps<T> {
   columns: ColumnDef<T>[];
   columnWidths: Record<string, number>;
   sortConfig: SortConfig[];
+  filterConfig: FilterConfig[];
+  data: T[];
   onSort: (columnKey: string, event?: React.MouseEvent) => void;
-  onFilter: (columnKey: string, value: any) => void;
+  onFilter: (columnKey: string, value: any, operator: FilterConfig['operator']) => void;
   onResizeStart: (columnKey: string, startX: number) => void;
   onColumnDragStart: (columnKey: string, e: React.DragEvent) => void;
   onColumnDragOver: (columnKey: string, e: React.DragEvent) => void;
@@ -25,6 +28,8 @@ export function DataGridHeader<T>({
   columns,
   columnWidths,
   sortConfig,
+  filterConfig,
+  data,
   onSort,
   onFilter,
   onResizeStart,
@@ -40,6 +45,7 @@ export function DataGridHeader<T>({
   onSelectAll,
   getColumnWidth
 }: DataGridHeaderProps<T>) {
+  const [activeFilterColumn, setActiveFilterColumn] = useState<string | null>(null);
   const getSortDirection = (columnKey: string) => {
     const sort = sortConfig.find(s => s.key === columnKey);
     return sort ? sort.direction : null;
@@ -50,10 +56,29 @@ export function DataGridHeader<T>({
     return index === -1 ? null : index + 1;
   };
 
+  const getCurrentFilter = (columnKey: string) => {
+    return filterConfig.find(f => f.key === columnKey) || null;
+  };
+
+  const isColumnFiltered = (columnKey: string) => {
+    return filterConfig.some(f => f.key === columnKey);
+  };
+
   const handleResizeMouseDown = (columnKey: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onResizeStart(columnKey, e.clientX);
+  };
+
+  const handleFilterClick = (columnKey: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveFilterColumn(activeFilterColumn === columnKey ? null : columnKey);
+  };
+
+  const handleFilterApply = (columnKey: string, value: any, operator: FilterConfig['operator']) => {
+    onFilter(columnKey, value, operator);
+    setActiveFilterColumn(null);
   };
 
   return (
@@ -109,7 +134,22 @@ export function DataGridHeader<T>({
               )}
               
               {column.filterable !== false && (
-                <i className="fas fa-filter data-grid-filter-icon" />
+                <div className="relative">
+                  <i 
+                    className={`fas fa-filter data-grid-filter-icon ${
+                      isColumnFiltered(column.key) ? 'active' : ''
+                    }`}
+                    onClick={(e) => handleFilterClick(column.key, e)}
+                  />
+                  <FilterPopover
+                    column={column}
+                    isOpen={activeFilterColumn === column.key}
+                    onClose={() => setActiveFilterColumn(null)}
+                    onApplyFilter={(value, operator) => handleFilterApply(column.key, value, operator)}
+                    currentFilter={getCurrentFilter(column.key)}
+                    data={data}
+                  />
+                </div>
               )}
             </div>
             

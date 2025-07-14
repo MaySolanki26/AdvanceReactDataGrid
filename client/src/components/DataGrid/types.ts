@@ -7,12 +7,16 @@ export interface ColumnDef<T = any> {
   sortable?: boolean;
   resizable?: boolean;
   filterable?: boolean;
+  editable?: boolean;
   fixed?: 'left' | 'right';
   hidden?: boolean;
   render?: (value: any, row: T, index: number) => React.ReactNode;
-  type?: 'text' | 'number' | 'date' | 'boolean' | 'custom';
+  type?: 'text' | 'number' | 'date' | 'boolean' | 'email' | 'password' | 'select' | 'multiselect' | 'custom';
   accessor?: (row: T) => any;
   groupBy?: boolean;
+  options?: { value: any; label: string }[];
+  validation?: (value: any) => string | null;
+  format?: (value: any) => string;
 }
 
 export interface GridOptions {
@@ -84,6 +88,8 @@ export interface DataGridProps<T = any> {
   onFilterChange?: (filterConfig: FilterConfig[]) => void;
   onColumnResize?: (key: string, width: number) => void;
   onColumnReorder?: (fromIndex: number, toIndex: number) => void;
+  onCellEdit?: (rowIndex: number, columnKey: string, value: any) => void;
+  onDataChange?: (newData: T[]) => void;
   className?: string;
   style?: React.CSSProperties;
 }
